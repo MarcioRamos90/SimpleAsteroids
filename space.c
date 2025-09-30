@@ -113,9 +113,9 @@ f_v2 FV2ScalarMult(f_v2 Vec, f32 Scale)
   return Result;
 }
 
-v2 V2Rotate(v2 Ref, double angle_degrees)
+v2 V2Rotate(v2 Ref, double TriangleAngle)
 {
-  f64 radian = angle_degrees * (M_PI / 180);
+  f64 radian = TriangleAngle * (M_PI / 180);
   v2 Result = {};
 
   f64 c = (f64) cos(radian);
@@ -144,7 +144,7 @@ f_v2 FV2Normalize(v2 Vec)
 
 void SetRocketVelocity(rocket *Player, v2 Point)
 {
-  v2 DiffenceCenterPoint = V2Diff(Point, Player->OriginalPosition.Center);
+  v2 DiffenceCenterPoint = V2Diff(Point, Player->Position.TriagleCenter);
   
   f_v2 DifferenceMagnitude = FV2Normalize(DiffenceCenterPoint);
 
@@ -156,40 +156,45 @@ void SetRocketVelocity(rocket *Player, v2 Point)
 void UpdateAndRender(game_struct *Game, rocket *Player, key_board_input *KeyboardInput)
 {
   // Angle control
-  if (KeyboardInput->KeyLeft.IsDown) Player->OriginalPosition.angle_degrees += Player->RotateSpeed;
-  if (KeyboardInput->KeyRight.IsDown) Player->OriginalPosition.angle_degrees += -Player->RotateSpeed;
-  if (KeyboardInput->KeyA.IsDown) Player->OriginalPosition.angle_degrees += Player->RotateSpeed;
-  if (KeyboardInput->KeyD.IsDown) Player->OriginalPosition.angle_degrees += -Player->RotateSpeed;
+  if (KeyboardInput->KeyLeft.IsDown) Player->Position.TriangleAngle += Player->RotateSpeed;
+  if (KeyboardInput->KeyRight.IsDown) Player->Position.TriangleAngle += -Player->RotateSpeed;
+  if (KeyboardInput->KeyA.IsDown) Player->Position.TriangleAngle += Player->RotateSpeed;
+  if (KeyboardInput->KeyD.IsDown) Player->Position.TriangleAngle += -Player->RotateSpeed;
 
-  Player->OriginalPosition.Center.X = (Player->OriginalPosition.ToPoint0.X + Player->OriginalPosition.ToPoint1.X + Player->OriginalPosition.ToPoint2.X) / 3;
-  Player->OriginalPosition.Center.Y = (Player->OriginalPosition.ToPoint0.Y + Player->OriginalPosition.ToPoint1.Y + Player->OriginalPosition.ToPoint2.Y) / 3;
+  Player->Position.TriagleCenter.X = (Player->Position.TriangleBasePoints.Point0.X + Player->Position.TriangleBasePoints.Point1.X + Player->Position.TriangleBasePoints.Point2.X) / 3;
+  Player->Position.TriagleCenter.Y = (Player->Position.TriangleBasePoints.Point0.Y + Player->Position.TriangleBasePoints.Point1.Y + Player->Position.TriangleBasePoints.Point2.Y) / 3;
 
-  v2 Pivot = Player->OriginalPosition.Center;
+  v2 Pivot = Player->Position.TriagleCenter;
 
-  v2 TempToPoint0 = V2Diff(Player->OriginalPosition.ToPoint0, Pivot);
-  TempToPoint0 = V2Rotate(TempToPoint0, Player->OriginalPosition.angle_degrees);
-  TempToPoint0 = V2Add(TempToPoint0, Pivot);
+  Player->Position.TriangleRelativePoints.Point0 = V2Diff(Player->Position.TriangleBasePoints.Point0, Pivot);
+  Player->Position.TriangleRelativePoints.Point0 = V2Rotate(Player->Position.TriangleRelativePoints.Point0, Player->Position.TriangleAngle);
+  Player->Position.TriangleRelativePoints.Point0 = V2Add(Player->Position.TriangleRelativePoints.Point0, Pivot);
 
-  v2 TempToPoint1 = V2Diff(Player->OriginalPosition.ToPoint1, Pivot);
-  TempToPoint1 = V2Rotate(TempToPoint1, Player->OriginalPosition.angle_degrees);
-  TempToPoint1 = V2Add(TempToPoint1, Pivot);
+  Player->Position.TriangleRelativePoints.Point1 = V2Diff(Player->Position.TriangleBasePoints.Point1, Pivot);
+  Player->Position.TriangleRelativePoints.Point1 = V2Rotate(Player->Position.TriangleRelativePoints.Point1, Player->Position.TriangleAngle);
+  Player->Position.TriangleRelativePoints.Point1 = V2Add(Player->Position.TriangleRelativePoints.Point1, Pivot);
 
-  v2 TempToPoint2 = V2Diff(Player->OriginalPosition.ToPoint2, Pivot);
-  TempToPoint2 = V2Rotate(TempToPoint2, Player->OriginalPosition.angle_degrees);
-  TempToPoint2 = V2Add(TempToPoint2, Pivot);
+  Player->Position.TriangleRelativePoints.Point2 = V2Diff(Player->Position.TriangleBasePoints.Point2, Pivot);
+  Player->Position.TriangleRelativePoints.Point2 = V2Rotate(Player->Position.TriangleRelativePoints.Point2, Player->Position.TriangleAngle);
+  Player->Position.TriangleRelativePoints.Point2 = V2Add(Player->Position.TriangleRelativePoints.Point2, Pivot);
 
-  if (KeyboardInput->KeyUP.IsDown) SetRocketVelocity(Player, TempToPoint1);
-  if (KeyboardInput->KeyDown.IsDown) SetRocketVelocity(Player, TempToPoint1);
-  if (KeyboardInput->KeyW.IsDown) SetRocketVelocity(Player, TempToPoint1);
-  if (KeyboardInput->KeyS.IsDown) SetRocketVelocity(Player, TempToPoint1);
+  if (KeyboardInput->KeyUP.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyDown.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyW.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyS.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
 
-  Player->OriginalPosition.ToPoint0 = V2Add(Player->OriginalPosition.ToPoint0, ToV2(Player->Velocity));
-  Player->OriginalPosition.ToPoint1 = V2Add(Player->OriginalPosition.ToPoint1, ToV2(Player->Velocity));
-  Player->OriginalPosition.ToPoint2 = V2Add(Player->OriginalPosition.ToPoint2, ToV2(Player->Velocity));
+  Player->Position.TriangleBasePoints.Point0 = V2Add(Player->Position.TriangleBasePoints.Point0, ToV2(Player->Velocity));
+  Player->Position.TriangleBasePoints.Point1 = V2Add(Player->Position.TriangleBasePoints.Point1, ToV2(Player->Velocity));
+  Player->Position.TriangleBasePoints.Point2 = V2Add(Player->Position.TriangleBasePoints.Point2, ToV2(Player->Velocity));
 
-  GameDrawLine(Game, TempToPoint0, TempToPoint1, 0X00FF0000);
-  GameDrawLine(Game, TempToPoint1, TempToPoint2, 0X00FF0000);
-  GameDrawLine(Game, TempToPoint2, TempToPoint0, 0X000000FF);
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point0, Player->Position.TriangleRelativePoints.Point1, 0X00FF0000);
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point1, Player->Position.TriangleRelativePoints.Point2, 0X00FF0000);
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point2, Player->Position.TriangleRelativePoints.Point0, 0X000000FF);
+}
+
+internal void GameDrawStar(game_struct* Game, rocket *Player, v2 StarPoint)
+{
+  GameDrawPixel(Game, StarPoint, 0X00FF0000);
 }
 
 void MainGame(game_struct* Game, key_board_input *KeyboardInput)
@@ -204,12 +209,28 @@ void MainGame(game_struct* Game, key_board_input *KeyboardInput)
     Player.Width = 20;
     Player.Height = 20;
 
-    Player.OriginalPosition.ToPoint0 = {100, 100};
-    Player.OriginalPosition.ToPoint1 = V2Add(Player.OriginalPosition.ToPoint0, {50, 100});
-    Player.OriginalPosition.ToPoint2 = V2Add(Player.OriginalPosition.ToPoint1, {50, -100});
+    Player.Position.TriangleBasePoints.Point0 = {100, 100};
+    Player.Position.TriangleBasePoints.Point1 = V2Add(Player.Position.TriangleBasePoints.Point0, {50, 100});
+    Player.Position.TriangleBasePoints.Point2 = V2Add(Player.Position.TriangleBasePoints.Point1, {50, -100});
 
     GameMemory.IsInitialized = true;
   }
 
+  u32 TilesSpaceDimentions[1][2] = {
+    {Game->DisplayWidth, Game->DisplayHeight}
+  };
+
+  v2 StarsInSpace[1][5] = {
+    {{100, 100}, {150, 230}, {400, 10}, {300, 450}, {250, 340}}
+  };
+
   UpdateAndRender(Game, &Player, KeyboardInput);
+
+  u32 TileY = 0;
+
+  for (u32 TileX = 0; TileX < 5; ++TileX)
+  {
+    v2 StarPoint = StarsInSpace[TileY][TileX];
+    GameDrawStar(Game, &Player, StarPoint);
+  }
 }

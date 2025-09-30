@@ -2,7 +2,7 @@
 #include "program.h"
 #include "space.h"
 #include "space.c"
-#include "win32_editor.h"
+#include "win32_asteroids.h"
 
 win32_screen_buffer GlobalBuffer = {};
 bool32 GlobalRunning = false;

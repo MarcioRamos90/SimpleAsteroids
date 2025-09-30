@@ -13,6 +13,13 @@ struct f_v2
   f32 Y;
 };
 
+struct triangle
+{
+  v2 Point0;
+  v2 Point1;
+  v2 Point2;
+};
+
 struct rocket
 {
   f32 Speed = 1.1f;
@@ -23,12 +30,11 @@ struct rocket
   i32 Height;
 
   struct {
-    v2 ToPoint0;
-    v2 ToPoint1;
-    v2 ToPoint2;
-    v2 Center;
-    double angle_degrees;
-  } OriginalPosition;
+    triangle TriangleBasePoints;
+    triangle TriangleRelativePoints;
+    v2 TriagleCenter;
+    f32 TriangleAngle;
+  } Position;
 };
 
 struct key_state

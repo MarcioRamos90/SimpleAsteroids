@@ -8,6 +8,6 @@ set CommonCompilerFlags=-MTd -nologo -Gm- -GR- -EHa- -Od -Oi -WX -W4 -wd4067 -wd
 set CommonDynamicFlags=/DEDITOR_DEVELOPMENT=1
 
 
-call cl ../win32_editor.cpp %CommonCompilerFlags% %CommonDynamicFlags% /link user32.lib %CommonLinkerFlags%
+call cl ../win32_asteroids.cpp %CommonCompilerFlags% %CommonDynamicFlags% /link user32.lib %CommonLinkerFlags%
 
 popd
