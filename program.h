@@ -38,4 +38,9 @@ const wchar* FileText;
 #endif
 
 #define PROGRAM_MAIN_H
+
+i32 COLOR_RED = 0X00FF0000;
+i32 COLOR_GREEN = 0X00FF0000;
+i32 COLOR_BLACK = 0X000000;
+
 #endif

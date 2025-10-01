@@ -63,7 +63,7 @@ internal void GameDrawLine(game_struct* Game, v2 FromPoint, v2 ToPoint, u32 Colo
 
 internal void CleanScreen(game_struct* Game)
 {
-    GameDrawRect(Game, 0, 0, Game->DisplayBuffer.Width, Game->DisplayBuffer.Height, 0X000000); // Cleaning screen
+    GameDrawRect(Game, 0, 0, Game->DisplayBuffer.Width, Game->DisplayBuffer.Height, COLOR_BLACK); // Cleaning screen
 }
 
 v2 ToV2(f_v2 FVec)
@@ -87,6 +87,14 @@ f_v2 FV2Add(f_v2 A, f_v2 B)
   f_v2 Result = {};
   Result.X = A.X + B.X;
   Result.Y = A.Y + B.Y;
+  return Result;
+}
+
+f_v2 FV2Diff(f_v2 A, f_v2 B)
+{
+  f_v2 Result = {};
+  Result.X = A.X - B.X;
+  Result.Y = A.Y - B.Y;
   return Result;
 }
 
@@ -142,7 +150,7 @@ f_v2 FV2Normalize(v2 Vec)
   return Result;
 }
 
-void SetRocketVelocity(rocket *Player, v2 Point)
+void AddRocketVelocity(rocket *Player, v2 Point)
 {
   v2 DiffenceCenterPoint = V2Diff(Point, Player->Position.TriagleCenter);
   
@@ -151,6 +159,95 @@ void SetRocketVelocity(rocket *Player, v2 Point)
   f_v2 VelocityUnity = FV2ScalarMult(DifferenceMagnitude, Player->Speed);
 
   Player->Velocity = FV2Add(Player->Velocity, VelocityUnity);
+}
+
+void SubRocketVelocity(rocket *Player, v2 Point)
+{
+  v2 DiffenceCenterPoint = V2Diff(Point, Player->Position.TriagleCenter);
+  
+  f_v2 DifferenceMagnitude = FV2Normalize(DiffenceCenterPoint);
+
+  f_v2 VelocityUnity = FV2ScalarMult(DifferenceMagnitude, Player->Speed);
+
+  Player->Velocity = FV2Diff(Player->Velocity, VelocityUnity);
+}
+
+void GameDelimitingEdges(game_struct* Game, rocket* Player)
+{
+  v2 VectorEdges;
+  bool32 TraspassedEdge = true;
+  bool32 IsDiff = false;
+  if (Player->Position.TriangleRelativePoints.Point1.X > (i32)Game->DisplayWidth) 
+  {
+    VectorEdges = {(i32)Game->DisplayWidth, 0};
+    IsDiff = true;
+  }
+  else if (Player->Position.TriangleRelativePoints.Point1.X < 0)
+  {
+    VectorEdges = {(i32)Game->DisplayWidth, 0};
+    IsDiff = false;
+  }
+  else if (Player->Position.TriangleRelativePoints.Point1.Y > (i32) Game->DisplayHeight)
+  {
+    VectorEdges = {0, (i32)Game->DisplayHeight};
+    IsDiff = true;
+  }
+  else if (Player->Position.TriangleRelativePoints.Point1.Y < 0)
+  {
+    VectorEdges = {0, (i32)Game->DisplayHeight};
+    IsDiff = false;
+  }
+  else
+  {
+    TraspassedEdge = false;
+  }
+
+  if (TraspassedEdge)
+  {
+    v2 CopyPoint0;
+    v2 CopyPoint1;
+    v2 CopyPoint2;
+
+    if (IsDiff)
+    {
+      CopyPoint0 = V2Diff(Player->Position.TriangleRelativePoints.Point0, VectorEdges);
+      CopyPoint1 = V2Diff(Player->Position.TriangleRelativePoints.Point1, VectorEdges);
+      CopyPoint2 = V2Diff(Player->Position.TriangleRelativePoints.Point2, VectorEdges);
+    }
+    else
+    {
+      CopyPoint0 = V2Add(Player->Position.TriangleRelativePoints.Point0, VectorEdges);
+      CopyPoint1 = V2Add(Player->Position.TriangleRelativePoints.Point1, VectorEdges);
+      CopyPoint2 = V2Add(Player->Position.TriangleRelativePoints.Point2, VectorEdges);
+    }
+    if ((Player->Position.TriangleRelativePoints.Point0.X > (i32)Game->DisplayWidth && Player->Position.TriangleRelativePoints.Point2.X > (i32)Game->DisplayWidth) ||
+        (Player->Position.TriangleRelativePoints.Point0.X < 0 && Player->Position.TriangleRelativePoints.Point2.X < 0) ||
+        (Player->Position.TriangleRelativePoints.Point0.Y > (i32)Game->DisplayHeight && Player->Position.TriangleRelativePoints.Point2.Y > (i32)Game->DisplayHeight) ||
+        (Player->Position.TriangleRelativePoints.Point0.Y < 0 && Player->Position.TriangleRelativePoints.Point2.Y < 0)
+    )
+    {
+      Player->Position.TriangleRelativePoints.Point0 = CopyPoint0;
+      Player->Position.TriangleRelativePoints.Point1 = CopyPoint1;
+      Player->Position.TriangleRelativePoints.Point2 = CopyPoint2;
+
+      if (IsDiff)
+      {
+        Player->Position.TriangleBasePoints.Point0 = V2Diff(Player->Position.TriangleBasePoints.Point0, VectorEdges);
+        Player->Position.TriangleBasePoints.Point1 = V2Diff(Player->Position.TriangleBasePoints.Point1, VectorEdges);
+        Player->Position.TriangleBasePoints.Point2 = V2Diff(Player->Position.TriangleBasePoints.Point2, VectorEdges);
+      }
+      else 
+      {
+        Player->Position.TriangleBasePoints.Point0 = V2Add(Player->Position.TriangleBasePoints.Point0, VectorEdges);
+        Player->Position.TriangleBasePoints.Point1 = V2Add(Player->Position.TriangleBasePoints.Point1, VectorEdges);
+        Player->Position.TriangleBasePoints.Point2 = V2Add(Player->Position.TriangleBasePoints.Point2, VectorEdges);
+      }
+    }
+
+    GameDrawLine(Game,CopyPoint0,CopyPoint1, COLOR_RED);
+    GameDrawLine(Game,CopyPoint1,CopyPoint2, COLOR_RED);
+    GameDrawLine(Game,CopyPoint2,CopyPoint0, COLOR_GREEN);
+  }
 }
 
 void UpdateAndRender(game_struct *Game, rocket *Player, key_board_input *KeyboardInput)
@@ -178,33 +275,36 @@ void UpdateAndRender(game_struct *Game, rocket *Player, key_board_input *Keyboar
   Player->Position.TriangleRelativePoints.Point2 = V2Rotate(Player->Position.TriangleRelativePoints.Point2, Player->Position.TriangleAngle);
   Player->Position.TriangleRelativePoints.Point2 = V2Add(Player->Position.TriangleRelativePoints.Point2, Pivot);
 
-  if (KeyboardInput->KeyUP.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
-  if (KeyboardInput->KeyDown.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
-  if (KeyboardInput->KeyW.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
-  if (KeyboardInput->KeyS.IsDown) SetRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyUP.IsDown) AddRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyDown.IsDown) SubRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyW.IsDown) AddRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
+  if (KeyboardInput->KeyS.IsDown) SubRocketVelocity(Player, Player->Position.TriangleRelativePoints.Point1);
 
   Player->Position.TriangleBasePoints.Point0 = V2Add(Player->Position.TriangleBasePoints.Point0, ToV2(Player->Velocity));
   Player->Position.TriangleBasePoints.Point1 = V2Add(Player->Position.TriangleBasePoints.Point1, ToV2(Player->Velocity));
   Player->Position.TriangleBasePoints.Point2 = V2Add(Player->Position.TriangleBasePoints.Point2, ToV2(Player->Velocity));
 
-  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point0, Player->Position.TriangleRelativePoints.Point1, 0X00FF0000);
-  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point1, Player->Position.TriangleRelativePoints.Point2, 0X00FF0000);
-  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point2, Player->Position.TriangleRelativePoints.Point0, 0X000000FF);
+  GameDelimitingEdges(Game, Player);
+
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point0, Player->Position.TriangleRelativePoints.Point1, COLOR_RED);
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point1, Player->Position.TriangleRelativePoints.Point2, COLOR_RED);
+  GameDrawLine(Game, Player->Position.TriangleRelativePoints.Point2, Player->Position.TriangleRelativePoints.Point0, COLOR_GREEN);
+
 }
 
 internal void GameDrawStar(game_struct* Game, rocket *Player, v2 StarPoint)
 {
-  GameDrawPixel(Game, StarPoint, 0X00FF0000);
+  GameDrawPixel(Game, StarPoint, COLOR_RED);
 }
 
 void MainGame(game_struct* Game, key_board_input *KeyboardInput)
 {
   CleanScreen(Game);
 
+  Game->DisplayWidth = 960;
+  Game->DisplayHeight = 540;
   if (!GameMemory.IsInitialized)
   {
-    Game->DisplayWidth = 960;
-    Game->DisplayHeight = 540;
 
     Player.Width = 20;
     Player.Height = 20;
@@ -217,7 +317,7 @@ void MainGame(game_struct* Game, key_board_input *KeyboardInput)
   }
 
   u32 TilesSpaceDimentions[1][2] = {
-    {Game->DisplayWidth, Game->DisplayHeight}
+    {Game->DisplayWidth * 10, Game->DisplayHeight * 10}
   };
 
   v2 StarsInSpace[1][5] = {
