@@ -1,5 +1,7 @@
 
 #include "program.h"
+#include "vector2d.h"
+
 #include "space.h"
 #include "space.c"
 #include "win32_asteroids.h"
@@ -347,16 +349,16 @@ WinMain(HINSTANCE Instance,
             f32 TargetSecondsPerFrame = 1.0f / (f32)GameUpdateHz;
 
             LARGE_INTEGER LastCounter = Win32GetWallClock();
+
+            game_struct GameState = {};
+            GameState.DisplayBuffer.Width = GlobalBuffer.Width;
+            GameState.DisplayBuffer.Height = GlobalBuffer.Height;
+            GameState.DisplayBuffer.Pitch = GlobalBuffer.Pitch;
+            GameState.DisplayBuffer.BytesPerPixel = GlobalBuffer.BytesPerPixel;
+            GameState.DisplayBuffer.Memory = GlobalBuffer.Memory;
             while(GlobalRunning)
             {
                 Win32ProcessPendingMessages();
-
-                game_struct GameState = {};
-                GameState.DisplayBuffer.Width = GlobalBuffer.Width;
-                GameState.DisplayBuffer.Height = GlobalBuffer.Height;
-                GameState.DisplayBuffer.Pitch = GlobalBuffer.Pitch;
-                GameState.DisplayBuffer.BytesPerPixel = GlobalBuffer.BytesPerPixel;
-                GameState.DisplayBuffer.Memory = GlobalBuffer.Memory;
 
                 MainGame(&GameState, &KeyboardInput);
 

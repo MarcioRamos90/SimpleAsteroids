@@ -1,25 +1,6 @@
 
 #if !define(SPACE_PROGRAM_H)
 
-struct v2
-{
-  i32 X;
-  i32 Y;
-};
-
-struct f_v2
-{
-  f32 X;
-  f32 Y;
-};
-
-struct triangle
-{
-  v2 Point0;
-  v2 Point1;
-  v2 Point2;
-};
-
 struct rocket
 {
   f32 Speed = 1.1f;
@@ -30,9 +11,10 @@ struct rocket
   i32 Height;
 
   struct {
-    triangle TriangleBasePoints;
-    triangle TriangleRelativePoints;
+    triangle TriangleScreenBasePoints;
+    triangle TriangleScreenRelativePoints;
     v2 TriagleCenter;
+    v2 TriagleInitialCenter;
     f32 TriangleAngle;
   } Position;
 };
@@ -56,7 +38,7 @@ struct key_board_input
 
 struct game_memory
 {
-  bool32 IsInitialized;
+  bool32 IsInitialized = false;
 };
 
 struct screen_buffer
@@ -74,7 +56,8 @@ struct game_struct
   screen_buffer DisplayBuffer;
   u32 DisplayWidth;
   u32 DisplayHeight;
-
+  v2 WorldWindowDimensions;
+  v2 WorldWindowPosition;
 };
 
 #define SPACE_PROGRAM_H
