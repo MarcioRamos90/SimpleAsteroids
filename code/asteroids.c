@@ -66,7 +66,6 @@ internal void CleanScreen(game_struct* Game)
     GameDrawRect(Game, 0, 0, Game->DisplayBuffer.Width, Game->DisplayBuffer.Height, COLOR_BLACK); // Cleaning screen
 }
 
-
 void AddRocketVelocity(rocket *Player, v2 Point)
 {
   v2 DiffenceCenterPoint = V2Diff(Point, Player->Position.TriagleCenter);
@@ -124,10 +123,11 @@ void MainGame(game_struct* Game, key_board_input *KeyboardInput)
 {
   CleanScreen(Game);
 
-  Game->DisplayWidth = 960;
-  Game->DisplayHeight = 540;
   if (!GameMemory.IsInitialized)
   {
+    Game->DisplayWidth = 960;
+    Game->DisplayHeight = 540;
+
     Game->WorldWindowPosition = {(i32)Game->DisplayWidth, (i32)Game->DisplayHeight};
 
     Player.Width = 20;

@@ -1,9 +1,7 @@
 
 #include "program.h"
-#include "vector2d.h"
-
-#include "space.h"
-#include "space.c"
+#include "asteroids.h"
+#include "asteroids.c"
 #include "win32_asteroids.h"
 
 win32_screen_buffer GlobalBuffer = {};

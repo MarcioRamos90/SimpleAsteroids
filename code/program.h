@@ -31,7 +31,7 @@ typedef wchar_t wchar;
 
 const wchar* FileText;
 
-#if EDITOR_DEVELOPMENT
+#if ASTERIODS_DEVELOPMENT
     #define Assert(Expression) assert(Expression)
 #else
     #define Assert(Expression)
@@ -39,8 +39,4 @@ const wchar* FileText;
 
 #define PROGRAM_MAIN_H
 
-i32 COLOR_RED = 0X00FF0000;
-i32 COLOR_GREEN = 0X00FF0000;
-i32 COLOR_BLACK = 0X000000;
-i32 COLOR_WHITE = 0X0FFFFFF;
 #endif

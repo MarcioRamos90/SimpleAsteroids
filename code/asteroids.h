@@ -1,5 +1,11 @@
 
 #if !define(SPACE_PROGRAM_H)
+#include "vector2d.h"
+
+i32 COLOR_RED = 0X00FF0000;
+i32 COLOR_GREEN = 0X00FF0000;
+i32 COLOR_BLACK = 0X000000;
+i32 COLOR_WHITE = 0X0FFFFFF;
 
 struct rocket
 {
