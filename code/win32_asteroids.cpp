@@ -92,11 +92,6 @@ Win32MainWindowCallback(HWND Window,
         {
             RECT ClientRect;
             GetClientRect(Window, &ClientRect);
-            // Width = ClientRect.right - ClientRect.left;
-            // Height = ClientRect.bottom - ClientRect.top;
-
-            // xPos = LOWORD(LParam) - 5; // Get the x-coordinate
-            // yPos = HIWORD(LParam) - 10; // Get the y-coordinate
         } break;
 
         case WM_LBUTTONUP:
@@ -107,8 +102,8 @@ Win32MainWindowCallback(HWND Window,
         case WM_MOUSEMOVE:
         {} break;
 
-        case WM_SYSKEYDOWN:
-        case WM_SYSKEYUP:
+        // case WM_SYSKEYDOWN:
+        // case WM_SYSKEYUP:
         case WM_KEYDOWN:
         case WM_KEYUP:
         {
@@ -147,8 +142,8 @@ Win32ProcessPendingMessages(void)
             {
                 GlobalRunning = false;
             } break;
-            case WM_SYSKEYDOWN:
-            case WM_SYSKEYUP:
+            // case WM_SYSKEYDOWN:
+            // case WM_SYSKEYUP:
             case WM_KEYDOWN:
             case WM_KEYUP:
             {
@@ -253,6 +248,28 @@ Win32ProcessPendingMessages(void)
                     {
                         KeyboardInput.KeyRight.IsDown = false;
                     }
+                }
+
+                if(VKCode == VK_SPACE)
+                {
+                    if (IsDown)
+                    {
+                        KeyboardInput.KeySpace.IsDown = true;
+                    }
+                    else
+                    {
+                        KeyboardInput.KeySpace.IsDown = false;
+                    }
+
+                    if (WasDown)
+                    {
+                        KeyboardInput.KeySpace.WasDown = true;
+                    }
+                    else
+                    {
+                        KeyboardInput.KeySpace.WasDown = false;
+                    }
+
                 }
             } break;
 

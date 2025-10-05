@@ -68,7 +68,7 @@ v2 V2ScalarMult(v2 A, v2 B)
 
 f64 V2Mag(v2 Vec)
 {
-  f64 Result = {};
+  f64 Result = 0;
   Result = sqrt(Vec.X * Vec.X + Vec.Y * Vec.Y);
   return Result;
 }

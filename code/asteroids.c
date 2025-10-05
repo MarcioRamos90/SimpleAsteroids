@@ -88,6 +88,17 @@ void SubRocketVelocity(rocket *Player, v2 Point)
   Player->Velocity = FV2Diff(Player->Velocity, VelocityUnity);
 }
 
+f_v2 V2Move(v2 Point0, v2 Point1, f32 Speed)
+{
+  v2 DiffenceCenterPoint = V2Diff(Point1, Point0);
+  
+  f_v2 DifferenceMagnitude = FV2Normalize(DiffenceCenterPoint);
+
+  f_v2 VelocityUnity = FV2ScalarMult(DifferenceMagnitude, Speed);
+
+ return VelocityUnity;
+}
+
 void UpdateAndRender(game_struct *Game, rocket *Player, key_board_input *KeyboardInput)
 {
   // Angle control
@@ -112,6 +123,45 @@ void UpdateAndRender(game_struct *Game, rocket *Player, key_board_input *Keyboar
   GameDrawLine(Game, Player->Position.TriangleScreenRelativePoints.Point0, Player->Position.TriangleScreenRelativePoints.Point1, COLOR_RED);
   GameDrawLine(Game, Player->Position.TriangleScreenRelativePoints.Point1, Player->Position.TriangleScreenRelativePoints.Point2, COLOR_RED);
   GameDrawLine(Game, Player->Position.TriangleScreenRelativePoints.Point2, Player->Position.TriangleScreenRelativePoints.Point0, COLOR_GREEN);
+
+  if (KeyboardInput->KeySpace.IsDown && !Player->ToFire)
+  {
+    Player->ToFire = true;
+    i32 ProjectileIndex = -1;
+    
+    for (i32 i = 0; i < (i32) Player->MaxProjectiles; ++i)
+    {
+      if (!Player->Projectiles[i].IsActive) ProjectileIndex = i;
+    }
+    if (ProjectileIndex < (i32) Player->MaxProjectiles)
+    {
+      Player->Projectiles[ProjectileIndex].Position.Point0 = Player->Position.TriagleCenter;
+      Player->Projectiles[ProjectileIndex].Position.Point1 = Player->Position.TriangleScreenRelativePoints.Point1;
+      Player->Projectiles[ProjectileIndex].IsActive = true;
+    }
+  }
+  else if (KeyboardInput->KeySpace.WasDown && Player->ToFire)
+  {
+    Player->ToFire = false;
+  } 
+
+  for (u32 i = 0; i < Player->MaxProjectiles; ++i)
+  { 
+    if (Player->Projectiles[i].IsActive)
+    {
+      f_v2 VelUnity = V2Move(Player->Projectiles[i].Position.Point0, Player->Projectiles[i].Position.Point1, Player->Projectiles[i].Speed);
+      Player->Projectiles[i].Position.Point0 = V2Add(Player->Projectiles[i].Position.Point0, ToV2(VelUnity));
+      Player->Projectiles[i].Position.Point1 = V2Add(Player->Projectiles[i].Position.Point1, ToV2(VelUnity));
+      
+      f64 Distance = V2Mag(V2Diff(Player->Position.TriangleScreenRelativePoints.Point0, Player->Projectiles[i].Position.Point0));
+
+      if (Distance >  600.0f)
+      {
+        Player->Projectiles[i].IsActive = false;
+      }
+      GameDrawLine(Game, Player->Projectiles[i].Position.Point0, Player->Projectiles[i].Position.Point1, COLOR_RED);
+    }
+  }
 }
 
 internal void GameDrawStar(game_struct* Game, rocket *Player, v2 StarPoint)

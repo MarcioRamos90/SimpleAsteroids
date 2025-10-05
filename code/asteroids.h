@@ -7,11 +7,29 @@ i32 COLOR_GREEN = 0X00FF0000;
 i32 COLOR_BLACK = 0X000000;
 i32 COLOR_WHITE = 0X0FFFFFF;
 
+
+struct projectile
+{
+  f32 Speed = 30;
+  i32 Width = 1;
+  i32 Height = 10;
+  bool32 IsActive = false;
+  struct  
+  {
+    v2 Point0;
+    v2 Point1;
+  } Position;
+
+  u32 Damage;
+};
+
+#define PROJECTILE_MAX_ARRAY 10
 struct rocket
 {
   f32 Speed = 1.1f;
   f_v2 Velocity;
   f32 RotateSpeed = 3.0f;
+  bool32 ToFire = false;
 
   i32 Width;
   i32 Height;
@@ -23,11 +41,16 @@ struct rocket
     v2 TriagleInitialCenter;
     f32 TriangleAngle;
   } Position;
+
+  projectile Projectiles[PROJECTILE_MAX_ARRAY];
+  u32 MaxProjectiles = PROJECTILE_MAX_ARRAY;
+  u32 ProjectilesHead = 0;
 };
 
 struct key_state
 {
   bool32 IsDown;
+  bool32 WasDown;
 };
 
 struct key_board_input
@@ -40,6 +63,7 @@ struct key_board_input
   key_state KeyLeft;
   key_state KeyDown;
   key_state KeyRight;
+  key_state KeySpace;
 };
 
 struct game_memory
