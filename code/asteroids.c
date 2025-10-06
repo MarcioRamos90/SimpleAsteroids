@@ -1,5 +1,6 @@
 rocket Player;
 game_memory GameMemory;
+world_struct World[3][3];
 
 internal void GameDrawPixel(game_struct* Game, v2 Position, u32 Color)
 {
@@ -180,6 +181,8 @@ void MainGame(game_struct* Game, key_board_input *KeyboardInput)
 
     Game->WorldWindowPosition = {(i32)Game->DisplayWidth, (i32)Game->DisplayHeight};
 
+    // World = (world_struct**) VirtualAlloc(0, sizeof(world_struct) * 9, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
     Player.Width = 20;
     Player.Height = 20;
 
@@ -187,24 +190,48 @@ void MainGame(game_struct* Game, key_board_input *KeyboardInput)
     Player.Position.TriangleScreenBasePoints.Point1 = V2Add(Player.Position.TriangleScreenBasePoints.Point0, {50, 100});
     Player.Position.TriangleScreenBasePoints.Point2 = V2Add(Player.Position.TriangleScreenBasePoints.Point1, {50, -100});
 
+    
     GameMemory.IsInitialized = true;
-  }
 
-  v2 StarsInSpace[15] = {
-    {100, 100}, {150, 230}, {400, 10}, {300, 450}, {250, 340},
-    {1000, 100}, {1500, 230}, {1400, 10}, {1300, 450}, {1250, 340},
-    {100, 600}, {150, 650}, {400, 910}, {300, 850}, {250, 740},
-  };
+    i32 MaxWidth = Game->DisplayWidth;
+    i32 MinWidth = 0;
+    i32 MaxHeight = Game->DisplayHeight;
+    i32 MinHeight = 0;
+    
+    for (u32 y = 0; y < 3; y++)
+    {
+      i32 MaxY = MaxHeight * (y+1);
+      i32 MinY = MaxHeight * (y);
+      for (u32 x = 0; x < 3; x++)
+      {
+        for (u32 i = 0; i < 100; i++)
+        {
+          i32 MaxX = MaxWidth * (x+1);
+          i32 MinX = MaxWidth * (x);
+          i32 randX = (rand() % (MaxX - (MinX)) + 1) + (MinX);
+          i32 randY = (rand() % (MaxY - (MinY)) + 1) + (MinY);
+          World[y][x].StarsPositions[i] = {randX, randY};
+        }
+      }
+    }
+  }
 
   UpdateAndRender(Game, &Player, KeyboardInput);
 
   v2 PointDiffs = V2Diff(Game->WorldWindowPosition, {(i32)Game->DisplayWidth,(i32)Game->DisplayHeight});
-  
-  for (u32 TileX = 0; TileX < 15; ++TileX)
-  {
-  
-    v2 StarPoint = StarsInSpace[TileX];
 
-    GameDrawStar(Game, &Player, V2Diff(StarPoint, PointDiffs));
+  for (u32 y = 0; y < 3; y++)
+  {
+    for (u32 x = 0; x < 3; x++)
+    {
+      for (u32 TileX = 0; TileX < 100; ++TileX)
+      {
+      
+        v2 StarPoint =  World[y][x].StarsPositions[TileX];
+
+        GameDrawStar(Game, &Player, V2Diff(StarPoint, PointDiffs));
+      }
+    }
   }
+  
 }

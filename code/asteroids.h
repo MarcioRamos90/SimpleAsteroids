@@ -7,6 +7,12 @@ i32 COLOR_GREEN = 0X00FF0000;
 i32 COLOR_BLACK = 0X000000;
 i32 COLOR_WHITE = 0X0FFFFFF;
 
+struct world_struct
+{
+  i32 Width;
+  i32 Height;
+  v2 StarsPositions[100];
+};
 
 struct projectile
 {

@@ -10,6 +10,7 @@
 #include <string>
 #include <cwchar>
 #include <math.h>
+#include <time.h>
 
 #define internal static;
 

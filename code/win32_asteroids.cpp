@@ -70,6 +70,7 @@ Win32MainWindowCallback(HWND Window,
                         LPARAM LParam)
 {       
     LRESULT Result = 0;
+    srand((i32)time(NULL));
 
     switch(Message)
     {
